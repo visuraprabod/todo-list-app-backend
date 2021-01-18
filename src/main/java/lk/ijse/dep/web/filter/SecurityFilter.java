@@ -21,7 +21,9 @@ import java.io.IOException;
 public class SecurityFilter extends HttpFilter {
     @Override
     protected void doFilter(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
-        if (req.getServletPath().equals("/api/v1/auth") && req.getMethod().equals("POST")) {
+        if(req.getMethod().equals("OPTIONS")){
+            chain.doFilter(req,res);
+        }else if (req.getServletPath().equals("/api/v1/auth") && req.getMethod().equals("POST")) {
             chain.doFilter(req, res);
         } else if(req.getServletPath().equals("/api/v1/users") && req.getMethod().equals("POST")){
             chain.doFilter(req, res);

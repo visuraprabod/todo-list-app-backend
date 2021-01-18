@@ -32,6 +32,10 @@ public class UserServlet extends HttpServlet {
         try (Connection connection = cp.getConnection()) {
             Jsonb jsonb = JsonbBuilder.create();
             UserDTO userDTO = jsonb.fromJson(request.getReader(), UserDTO.class);
+            if (userDTO.getUsername() == null || userDTO.getPassword() == null || userDTO.getUsername().trim().isEmpty() || userDTO.getPassword().trim().isEmpty()){
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
             System.out.println(userDTO);
             String s = DigestUtils.sha256Hex(userDTO.getPassword());
 //        System.out.println(s);
