@@ -21,6 +21,64 @@ import java.util.List;
 
 @WebServlet(name = "TodoItemServlet", urlPatterns = "/api/v1/items/*")
 public class TodoItemServlet extends HttpServlet {
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Jsonb jsonb = JsonbBuilder.create();
+        TodoItemDTO item = jsonb.fromJson(request.getReader(), TodoItemDTO.class);
+        if(item.getId()==null || item.getText()==null || item.getUsername()==null
+                ||item.getText().trim().isEmpty() || item.getUsername().trim().isEmpty()){
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        BasicDataSource cp = (BasicDataSource) getServletContext().getAttribute("cp");
+        try(Connection connection = cp.getConnection()) {
+            PreparedStatement pstm = connection.prepareStatement(" UPDATE todo_item SET text=?,priority=?,status=? WHERE username=? AND id=?");
+            pstm.setObject(1,item.getText());
+            pstm.setObject(2,String.valueOf(item.getPriority()));
+            pstm.setObject(3,String.valueOf(item.getStatus()));
+            pstm.setObject(4,item.getUsername());
+            pstm.setObject(5,item.getId());
+
+            if(pstm.executeUpdate()>0){
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            }else{
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+
+
+        } catch (SQLException throwables) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            throwables.printStackTrace();
+        }
+
+
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String user = (String) req.getAttribute("user");
+
+        String id = req.getParameter("id");
+        BasicDataSource cp = (BasicDataSource) getServletContext().getAttribute("cp");
+        try(Connection connection = cp.getConnection()) {
+            PreparedStatement pstm = connection.prepareStatement("DELETE FROM todo_item WHERE username=? AND id=?");
+            pstm.setObject(1,user);
+            pstm.setObject(2,id);
+
+            if(pstm.executeUpdate()>0){
+                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            }else{
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+        } catch (SQLException throwables) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            throwables.printStackTrace();
+        }
+
+
+    }
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Jsonb jsonb = JsonbBuilder.create();
         TodoItemDTO item = jsonb.fromJson(request.getReader(), TodoItemDTO.class);

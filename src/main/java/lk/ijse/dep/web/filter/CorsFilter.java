@@ -11,9 +11,8 @@ import java.io.IOException;
 public class CorsFilter extends HttpFilter {
     @Override
     protected void doFilter(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
-        System.out.println("methanta enwa");
         res.setHeader("Access-Control-Allow-Origin","http://localhost:4200");
-        res.setHeader("Access-Control-Allow-Headers","Content-Type");
+        res.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
         res.setHeader("Access-Control-Allow-Methods","GET,POST,DELETE,PUT,OPTIONS");
         chain.doFilter(req,res);
     }

@@ -101,6 +101,26 @@ public class UserServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        BasicDataSource cp = (BasicDataSource) getServletContext().getAttribute("cp");
+
+        String q = request.getParameter("q");
+        System.out.println(q);
+
+        try(Connection connection = cp.getConnection();) {
+
+            PreparedStatement pstm = connection.prepareStatement("SELECT * FROM user WHERE username=?");
+            pstm.setObject(1,q);
+            ResultSet rst = pstm.executeQuery();
+            if(pstm.executeQuery().next()){
+                response.getWriter().println("user already exist");
+                response.setContentType("text/plain");
+            }else{
+                response.setStatus(SC_NOT_FOUND);
+            }
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
 
     }
 }
